@@ -56,6 +56,7 @@ cat <<EOF
 
   2. 抓文献：
        bash $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/fetch-paper.sh <arxiv-id> <目录名>
+     脚本只生成 research note 骨架；读过原文后填写每篇 research_note.md 的七段内容。
 
   3. **先复现再找问题** —— 挑两三篇有开源代码的跑通，写 复现/<方法>/复现报告.md
      论文只报平均和成功配置，卡在哪、哪个 setting 崩了，只有自己跑才看得见

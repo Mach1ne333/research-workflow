@@ -1,5 +1,5 @@
 #!/bin/bash
-# 抓一篇 arXiv 论文到 related_work/，PDF 和 LaTeX 源码都下，并自动清洗源码。
+# 抓一篇 arXiv 论文到 related_work/，清洗源码，并创建 research note 骨架（已有笔记不覆盖）。
 #
 #   ./fetch-paper.sh 2301.11305 detectgpt-zero-shot-curvature
 #   ./fetch-paper.sh 2301.11305                    # 不给 slug 就用 arXiv ID 当目录名
@@ -12,11 +12,16 @@ set -euo pipefail
 ID="${1:?用法: fetch-paper.sh <arxiv-id> [slug]}"
 SLUG="${2:-$ID}"
 DEST="related_work/$SLUG"
+TPL="$(cd "$(dirname "${BASH_SOURCE[0]}")/../assets/templates" && pwd)"
 UA="research-workflow/1.0 (academic use)"
 
 mkdir -p "$DEST/source"
 
 echo "▸ $ID → $DEST"
+if [ ! -e "$DEST/research_note.md" ] && [ ! -L "$DEST/research_note.md" ]; then
+  cp "$TPL/research_note.md" "$DEST/research_note.md"
+  echo "  + research_note.md（待调研；读完论文后填写七段，下载不代表调研完成）"
+fi
 
 # --- PDF ---
 if [ ! -s "$DEST/paper.pdf" ]; then
@@ -42,8 +47,8 @@ rm -f "$BLOB"
 
 if [ "$HAS_TEX" = false ] || [ -z "$(find "$DEST/source" -name '*.tex' -print -quit)" ]; then
   rmdir "$DEST/source" 2>/dev/null || true
-  echo "  ⚠ 没有 LaTeX 源码（PDF-only 投稿）。细查表格公式时只能读 PDF，"
-  echo "    注意行列可能错位，用 pdftotext -layout 而不是默认参数。"
+  echo "  ⚠ 本次未获取到 LaTeX 源码，不能据此断定作者没有公开源码；请在 research note 中说明。"
+  echo "    细查表格公式时读 PDF，注意行列可能错位，用 pdftotext -layout 而不是默认参数。"
   echo "  ✓ $DEST/paper.pdf"
   exit 0
 fi

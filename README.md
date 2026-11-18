@@ -1,5 +1,9 @@
 # research-workflow
 
+> 本仓库 fork 自 [skJack/research-workflow](https://github.com/skJack/research-workflow)（Apache-2.0）。
+> 改动：`related_work/` 每篇新增七段 **research note**（`assets/templates/research_note.md`），
+> 下载论文时自动建骨架，并附离线自检脚本；原「调研笔记」相关命名统一为 `research_note.md`。
+
 > A Claude Code skill that organizes a research project into a fixed file structure,
 > so both you and every fresh agent window know where to read context and where to
 > write results. **中文说明在下面。**
@@ -27,7 +31,7 @@ Cursor 用户放 `~/.cursor/skills/` 或 `.agents/skills/`。
 ├── AGENTS.md              项目总纲：在做什么、硬规矩 —— 每个新窗口第一个读
 ├── handoff.md             进度交接 —— 每个窗口结束前更新，下一个窗口靠它接上
 ├── brainstorm.md          问题和假设的讨论记录，倒序
-├── related_work/          文献，每篇 paper.pdf + source/
+├── related_work/          文献，每篇 paper.pdf + source/ + research_note.md
 ├── 复现/                   baseline 复现 + 复现报告
 ├── experiment/
 │   ├── results.md         每版实验一行，不覆盖不删
@@ -43,16 +47,40 @@ Cursor 用户放 `~/.cursor/skills/` 或 `.agents/skills/`。
 bash ~/.claude/skills/research-workflow/scripts/init-project.sh ~/Code/my-paper
 ```
 
-**抓论文**（PDF + LaTeX 源码都下，源码自动清洗——隔离作者打包进来的旧稿、剥掉注释掉的正文）：
+**抓论文**（下载 PDF、尝试获取并清洗 LaTeX 源码——隔离旧稿、剥注释；同时创建 research note 骨架，不覆盖已有笔记）：
 
 ```bash
 bash ~/.claude/skills/research-workflow/scripts/fetch-paper.sh 2301.11305 detectgpt
 ```
 
+## 每篇论文的 research note
+
+每个方法目录必须有独立的 `research_note.md`，`README.md` 仅作导航或简短导读。
+模板见 [assets/templates/research_note.md](assets/templates/research_note.md)，固定七段：
+
+- 开头：论文标题、来源/阅读说明、版本与机构、代码/权重/数据开放情况及链接、整理状态和一句话总结。
+- `1. 要解决的问题`
+- `2. 方法`
+- `3. 实验`
+- `4. 局限`
+- `5. 复现要点`
+- `6. 关键引用链`
+
+关键数字和结论要有原文位置；图表估读明确标注，且必须实际看过图。
+区分作者陈述与笔记者分析、论文结果与本地实测，未知写“待核实”，未运行不写成已复现。
+脚本仅生成待填写模板；读完原文再完善，不能以下载或模板占位符冒充完成调研。
+详细规则见 [SKILL.md](SKILL.md)。
+
+离线检查脚本与模板（不访问 arXiv）：
+
+```bash
+bash scripts/test-fetch-paper.sh
+```
+
 ## 工作节奏
 
 ```
-抓文献 → 复现关键 baseline → 提假设 → 跑实验 → （循环）
+抓文献并写 research note → 复现关键 baseline → 提假设 → 跑实验 → （循环）
 ```
 
 复现放在提假设之前：论文只报平均值和成功配置，
