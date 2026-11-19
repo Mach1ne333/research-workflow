@@ -16,7 +16,7 @@
 ## 安装
 
 ```bash
-git clone https://github.com/skJack/research-workflow.git ~/.claude/skills/research-workflow
+git clone https://github.com/Mach1ne333/research-workflow.git ~/.claude/skills/research-workflow
 ```
 
 Cursor 用户放 `~/.cursor/skills/` 或 `.agents/skills/`。
@@ -31,7 +31,7 @@ Cursor 用户放 `~/.cursor/skills/` 或 `.agents/skills/`。
 ├── AGENTS.md              项目总纲：在做什么、硬规矩 —— 每个新窗口第一个读
 ├── handoff.md             进度交接 —— 每个窗口结束前更新，下一个窗口靠它接上
 ├── brainstorm.md          问题和假设的讨论记录，倒序
-├── related_work/          文献，每篇 paper.pdf + source/ + research_note.md
+├── related_work/          文献，每篇 <算法缩写或目录名>.pdf + source/ + research_note.md
 ├── 复现/                   baseline 复现 + 复现报告
 ├── experiment/
 │   ├── results.md         每版实验一行，不覆盖不删
@@ -50,8 +50,16 @@ bash ~/.claude/skills/research-workflow/scripts/init-project.sh ~/Code/my-paper
 **抓论文**（下载 PDF、尝试获取并清洗 LaTeX 源码——隔离旧稿、剥注释；同时创建 research note 骨架，不覆盖已有笔记）：
 
 ```bash
-bash ~/.claude/skills/research-workflow/scripts/fetch-paper.sh 2301.11305 detectgpt
+bash ~/.claude/skills/research-workflow/scripts/fetch-paper.sh 2410.24164 pi0
+# → related_work/pi0/pi0.pdf
+bash ~/.claude/skills/research-workflow/scripts/fetch-paper.sh 2301.11305 detectgpt-zero-shot-curvature detectgpt
+# → related_work/detectgpt-zero-shot-curvature/detectgpt.pdf
 ```
+
+用法：`fetch-paper.sh <arxiv-id> [目录名] [算法缩写]`。
+先从论文确认作者的算法 / 模型缩写或名称；没有明确命名时采用工作目录名。
+脚本不猜名称，第三参数传已确认的缩写（不带 `.pdf` 或路径），省略则采用目录名。
+旧 PDF 本地重命名时同步笔记、索引与 manifest，不重新下载或覆盖不同文献。
 
 ## 每篇论文的 research note
 

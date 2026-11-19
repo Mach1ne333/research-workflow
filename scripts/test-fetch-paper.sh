@@ -1,5 +1,5 @@
 #!/bin/bash
-# 离线自检：伪造下载，验证七段模板及已有笔记不被覆盖。
+# 离线自检：伪造下载，验证 PDF 命名、七段模板及已有文件不被覆盖。
 set -euo pipefail
 
 SKILL="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -45,6 +45,8 @@ grep -Fq '状态：待调研' "$TEMPLATE"
 SLUG='方法 with spaces'
 bash "$SKILL/scripts/fetch-paper.sh" 2406.09246 "$SLUG" > /dev/null
 cmp "$TEMPLATE" "related_work/$SLUG/research_note.md"
+[ -s "related_work/$SLUG/$SLUG.pdf" ]
+[ ! -e "related_work/$SLUG/paper.pdf" ]
 [ -s "related_work/$SLUG/source/main.tex" ]
 [ -s "related_work/$SLUG/source/main.tex.orig" ]
 printf '已有人工笔记，不能覆盖\n' > "$TMP/expected.md"
@@ -54,8 +56,26 @@ cmp "$TMP/expected.md" "related_work/$SLUG/research_note.md"
 
 PDF_ONLY=1 bash "$SKILL/scripts/fetch-paper.sh" 2410.24164 > "$TMP/pdf-only.log"
 cmp "$TEMPLATE" related_work/2410.24164/research_note.md
+[ -s related_work/2410.24164/2410.24164.pdf ]
 [ ! -d related_work/2410.24164/source ]
 grep -Fq '本次未获取到 LaTeX 源码' "$TMP/pdf-only.log"
+
+PDF_ONLY=1 bash "$SKILL/scripts/fetch-paper.sh" 2410.24164 'descriptive directory' pi0 > "$TMP/named.log"
+[ -s 'related_work/descriptive directory/pi0.pdf' ]
+[ ! -e 'related_work/descriptive directory/descriptive directory.pdf' ]
+grep -Fq 'related_work/descriptive directory/pi0.pdf' "$TMP/named.log"
+printf '%%PDF-1.4\n已有原文，不能覆盖\n' > "$TMP/expected.pdf"
+cp "$TMP/expected.pdf" 'related_work/descriptive directory/pi0.pdf'
+PDF_ONLY=1 bash "$SKILL/scripts/fetch-paper.sh" 2410.24164 'descriptive directory' pi0 > /dev/null
+cmp "$TMP/expected.pdf" 'related_work/descriptive directory/pi0.pdf'
+
+for name in '../escape' 'nested/name' 'nested\name' '.' '..'; do
+  if PDF_ONLY=1 bash "$SKILL/scripts/fetch-paper.sh" 2410.24164 invalid "$name" > /dev/null 2>&1; then
+    echo "FAIL: 不应接受 PDF 路径 $name" >&2
+    exit 1
+  fi
+done
+[ ! -d related_work/invalid ]
 
 mkdir -p related_work/linked
 ln -s "$TMP/not-created.md" related_work/linked/research_note.md
@@ -65,8 +85,9 @@ PDF_ONLY=1 bash "$SKILL/scripts/fetch-paper.sh" 2406.09246 linked > /dev/null
 
 bash "$SKILL/scripts/init-project.sh" "$TMP/new project" > /dev/null
 cmp "$SKILL/assets/templates/AGENTS.md" "$TMP/new project/AGENTS.md"
+grep -Fxq 'related_work/*/*.pdf' "$TMP/new project/.gitignore"
 cp "$TMP/expected.md" "$TMP/new project/AGENTS.md"
 bash "$SKILL/scripts/init-project.sh" "$TMP/new project" > /dev/null
 cmp "$TMP/expected.md" "$TMP/new project/AGENTS.md"
 
-echo 'PASS: 七段模板、源码/无源码分支、中文空格路径、已有笔记/符号链接保护、项目初始化幂等。'
+echo 'PASS: 缩写/目录名/arXiv 回退命名、路径校验、PDF/笔记保护、七段模板、源码分支、中文空格路径、初始化幂等及 PDF 忽略规则。'

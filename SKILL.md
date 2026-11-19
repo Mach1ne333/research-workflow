@@ -30,7 +30,7 @@ bash <skill>/scripts/init-project.sh <项目目录>
 |---|---|---|
 | `AGENTS.md` | 项目总纲：在做什么、目录说明、硬规矩 | 每个新窗口**第一个读** |
 | `handoff.md` | 进度交接：到哪了、下一步、踩过的坑 | 每个新窗口**第二个读**；每个窗口结束前**更新** |
-| `related_work/` | 文献，每篇 `paper.pdf` + `source/` + `research_note.md` | 读论文时写笔记；引用、对比方法前先读笔记，再核对原文 |
+| `related_work/` | 文献，每篇 `<算法缩写或目录名>.pdf` + `source/` + `research_note.md` | 读论文时写笔记；引用、对比方法前先读笔记，再核对原文 |
 | `复现/` | baseline 复现，每个方法一份复现报告 | 要确认 baseline 数字时 |
 | `brainstorm.md` | 问题和假设是怎么讨论出来的，倒序记 | 提假设阶段写；想不通设计意图时读 |
 | `experiment/results.md` | 每一版实验一行：命名、指标、结论 | 每次实验后追加 |
@@ -51,21 +51,33 @@ bash <skill>/scripts/init-project.sh <项目目录>
 ## 抓文献
 
 ```bash
-bash <skill>/scripts/fetch-paper.sh <arxiv-id> [目录名]
+bash <skill>/scripts/fetch-paper.sh <arxiv-id> [目录名] [算法缩写]
+# 缩写与目录名一致：related_work/pi0/pi0.pdf
+bash <skill>/scripts/fetch-paper.sh 2410.24164 pi0
+# 目录名是描述性别名：related_work/detectgpt-zero-shot-curvature/detectgpt.pdf
+bash <skill>/scripts/fetch-paper.sh 2301.11305 detectgpt-zero-shot-curvature detectgpt
 ```
+
+**PDF 命名：优先用作者明确提出的算法 / 模型缩写或名称**，采用便于文件检索的写法，
+例如 π₀ → `pi0.pdf`、OpenVLA → `openvla.pdf`。先读论文确认，不自行编造缩写。
+作者没有明确命名时，用该工作在 `related_work/` 中的目录名加 `.pdf`。
+脚本不自动推断算法名：第三参数传已确认的缩写；省略时采用目录名，缩写与目录名相同也可省略。
+第三参数只传文件名主体，不带 `.pdf` 或路径。
+整理旧项目时本地重命名并同步 README、笔记、索引、manifest 等引用，不为改名重新下载；
+若目标文件已存在，先核对内容，不能覆盖不同文献。
 
 脚本下载 PDF、尝试获取 LaTeX 源码并自动清洗（隔离旧稿、剥注释），同时从
 `assets/templates/research_note.md` 创建笔记骨架；已有笔记不覆盖。
 下载完成不等于调研完成，骨架必须在读过论文后填写；源码本次未获取到时明确记录原因，
 不能据此断定作者没有公开源码。
-泛读读 `paper.pdf`；查表格、公式、引用读 `source/*.tex`；图只在 PDF 里。
+泛读读对应的 `<算法缩写或目录名>.pdf`；查表格、公式、引用读 `source/*.tex`；图只在 PDF 里。
 
 ## research note：每篇必备，固定七段
 
 每个 `related_work/<方法>/` 目录包含：
 
 ```text
-paper.pdf
+<算法缩写或目录名>.pdf  # 例如 pi0.pdf；没有明确算法名则用目录名
 source/          # 能获取时保存 LaTeX；未获取到则在笔记中说明
 research_note.md # 独立的论文 research note，不以 README.md 代替
 ```

@@ -1,7 +1,8 @@
 #!/bin/bash
 # 抓一篇 arXiv 论文到 related_work/，清洗源码，并创建 research note 骨架（已有笔记不覆盖）。
 #
-#   ./fetch-paper.sh 2301.11305 detectgpt-zero-shot-curvature
+#   ./fetch-paper.sh 2301.11305 detectgpt-zero-shot-curvature detectgpt
+#   ./fetch-paper.sh 2410.24164 pi0               # 缩写与目录名相同时可省略第三参数
 #   ./fetch-paper.sh 2301.11305                    # 不给 slug 就用 arXiv ID 当目录名
 #
 # 两个都下：泛读读 PDF，查表格/公式读 LaTeX。
@@ -9,9 +10,14 @@
 
 set -euo pipefail
 
-ID="${1:?用法: fetch-paper.sh <arxiv-id> [slug]}"
+ID="${1:?用法: fetch-paper.sh <arxiv-id> [slug] [算法缩写]}"
 SLUG="${2:-$ID}"
 DEST="related_work/$SLUG"
+NAME="${3:-$(basename -- "$DEST")}"
+case "$NAME" in
+  .|..|*/*|*\\*) echo "算法缩写必须是文件名，不能包含路径：$NAME" >&2; exit 1 ;;
+esac
+PDF="$DEST/$NAME.pdf"
 TPL="$(cd "$(dirname "${BASH_SOURCE[0]}")/../assets/templates" && pwd)"
 UA="research-workflow/1.0 (academic use)"
 
@@ -24,11 +30,11 @@ if [ ! -e "$DEST/research_note.md" ] && [ ! -L "$DEST/research_note.md" ]; then
 fi
 
 # --- PDF ---
-if [ ! -s "$DEST/paper.pdf" ]; then
-  curl -sL -A "$UA" --max-time 180 "https://arxiv.org/pdf/$ID" -o "$DEST/paper.pdf"
+if [ ! -s "$PDF" ]; then
+  curl -sL -A "$UA" --max-time 180 "https://arxiv.org/pdf/$ID" -o "$PDF"
   sleep 3   # arXiv 要求礼貌抓取，别去掉
 fi
-[ -s "$DEST/paper.pdf" ] || { echo "  ✗ PDF 下载失败"; exit 1; }
+[ -s "$PDF" ] || { echo "  ✗ PDF 下载失败"; exit 1; }
 
 # --- LaTeX 源码 ---
 BLOB=$(mktemp)
@@ -49,7 +55,7 @@ if [ "$HAS_TEX" = false ] || [ -z "$(find "$DEST/source" -name '*.tex' -print -q
   rmdir "$DEST/source" 2>/dev/null || true
   echo "  ⚠ 本次未获取到 LaTeX 源码，不能据此断定作者没有公开源码；请在 research note 中说明。"
   echo "    细查表格公式时读 PDF，注意行列可能错位，用 pdftotext -layout 而不是默认参数。"
-  echo "  ✓ $DEST/paper.pdf"
+  echo "  ✓ $PDF"
   exit 0
 fi
 
@@ -86,6 +92,6 @@ NMACRO=$(find "$DEST/source" -name '*.tex' -not -path '*/.stale/*' \
          -exec grep -ch '\\newcommand\|\\def\\' {} + 2>/dev/null \
          | awk '{s+=$1} END{print s+0}')
 
-echo "  ✓ paper.pdf + source/（$CLEANED 个 .tex 已剥注释，原文件存为 .orig）"
+echo "  ✓ $NAME.pdf + source/（$CLEANED 个 .tex 已剥注释，原文件存为 .orig）"
 [ "$NMACRO" -gt 80 ] && echo "  ⚠ 自定义宏 $NMACRO 个，读正文前先读这些文件：" && echo "$MACROS" | sed 's|^|      |'
-echo "  提示：泛读读 paper.pdf；查表格/公式/引用读 source/*.tex"
+echo "  提示：泛读读 $NAME.pdf；查表格/公式/引用读 source/*.tex"

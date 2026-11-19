@@ -34,7 +34,7 @@ put evaluation.md  experiment/evaluation.md
 if [ ! -e .gitignore ]; then
   cat > .gitignore <<'EOF'
 DataSet/
-related_work/*/paper.pdf
+related_work/*/*.pdf
 related_work/*/source/
 experiment/*/checkpoints/
 experiment/*/*.pt
@@ -55,7 +55,8 @@ cat <<EOF
      那是整个项目的锚，Agent 靠它判断什么该做什么不该做
 
   2. 抓文献：
-       bash $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/fetch-paper.sh <arxiv-id> <目录名>
+       bash $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/fetch-paper.sh <arxiv-id> <目录名> [算法缩写]
+     PDF 用作者算法/模型缩写命名；没有明确名称则用目录名。缩写与目录名相同可省略第三参数。
      脚本只生成 research note 骨架；读过原文后填写每篇 research_note.md 的七段内容。
 
   3. **先复现再找问题** —— 挑两三篇有开源代码的跑通，写 复现/<方法>/复现报告.md

@@ -22,7 +22,7 @@
 
 | 路径 | 是什么 | 什么时候看 |
 |---|---|---|
-| `related_work/` | 相关文献，每篇 `paper.pdf` + `source/` + `research_note.md` | 读论文时写笔记；引用、对比方法前先读笔记，再核对原文 |
+| `related_work/` | 相关文献，每篇 `<算法缩写或目录名>.pdf` + `source/` + `research_note.md` | 读论文时写笔记；引用、对比方法前先读笔记，再核对原文 |
 | `复现/` | 重要 baseline 的复现，每个带一份复现报告 | 要确认 baseline 数字时 |
 | `brainstorm.md` | 问题和假设是怎么聊出来的 | 想不通为什么这么设计时 |
 | `experiment/` | 实验代码 + 每一版结果 | 跑实验 |
@@ -33,12 +33,15 @@
 
 ## 读论文的规矩
 
-`related_work/` 每篇包含 `paper.pdf`、`source/`（能获取时保存 LaTeX）和独立的 `research_note.md`。
+`related_work/` 每篇包含 `<算法缩写或目录名>.pdf`、`source/`（能获取时保存 LaTeX）和独立的 `research_note.md`。
+PDF 优先按作者明确提出的算法 / 模型缩写命名（如 `pi0.pdf`），没有明确名称则用工作目录名。
+`fetch-paper.sh <arxiv-id> [目录名] [算法缩写]` 的第三参数用于缩写与目录名不同时；省略则用目录名。
+旧文献改名须同步笔记、索引和 manifest 引用，不覆盖已存在的不同文献。
 先读笔记了解方法和核验状态，再按要问什么核对原文：
 
-- 泛读（讲了什么、什么方法）→ `paper.pdf`
+- 泛读（讲了什么、什么方法）→ 对应的 PDF
 - 细查（表里的数、公式、引用）→ `source/*.tex`
-- 看图 → 只能 `paper.pdf`，图不在源码里
+- 看图 → 只能看对应的 PDF，图不在源码里
 
 用 `fetch-paper.sh` 抓的源码已清洗过（旧稿在 `source/.stale/`，注释已剥、原文存 `.orig`）。
 手动下的记得自己清一遍。宏多的论文先读 `commands.tex` / `macros.tex` 这类文件。
